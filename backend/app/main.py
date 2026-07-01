@@ -20,3 +20,11 @@ def home():
     return {
         "message": "Welcome to FinRelief AI Platform"
     }
+    
+@app.get("/health")
+def health_check():
+    return {
+        "status": "Healthy",
+        "application": "FinRelief AI",
+        "version": "1.0.0"
+    }
