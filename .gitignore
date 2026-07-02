@@ -1,13 +1,20 @@
-# FinRelief AI specific
-node_modules/
-Frontend/node_modules/
-Frontend/dist/
-dist/
+# Python
+.venv/
+__pycache__/
+*.pyc
 
+# Database
 *.db
-*.sqlite3
 
+# Environment
+.env
+
+# Node
+node_modules/
+
+# VS Code
 .vscode/
 
+# OS
 .DS_Store
 Thumbs.db
