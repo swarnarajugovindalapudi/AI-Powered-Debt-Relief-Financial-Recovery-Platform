@@ -18,13 +18,14 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {
-        "message": "Welcome to FinRelief AI Platform"
+        "message": "Welcome to FinRelief AI Platform",
+        "status": "Running Successfully"
     }
-    
+
 @app.get("/health")
-def health_check():
+def health():
     return {
-        "status": "Healthy",
         "application": "FinRelief AI",
+        "status": "Healthy",
         "version": "1.0.0"
     }
