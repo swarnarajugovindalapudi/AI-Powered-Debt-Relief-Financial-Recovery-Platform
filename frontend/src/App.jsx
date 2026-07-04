@@ -1,122 +1,82 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app">
+      <header className="hero">
+        <h1>FinRelief AI</h1>
+        <p className="subtitle">
+          AI-Powered Debt Relief & Financial Recovery Platform
+        </p>
+
+        <p className="description">
+          FinRelief AI is a full-stack financial assistance platform developed
+          using React, FastAPI, Python, SQLite and Google Gemini AI. It helps
+          borrowers analyze their financial health, estimate debt settlements,
+          and generate AI-assisted negotiation strategies.
+        </p>
+
+        <div className="buttons">
+          <a
+            href="https://finrelief-ai-backend.onrender.com"
+            target="_blank"
+            rel="noreferrer"
+            className="btn"
+          >
+            Live Backend API
+          </a>
+
+          <a
+            href="https://github.com/swarnarajugovindalapudi/AI-Powered-Debt-Relief-Financial-Recovery-Platform"
+            target="_blank"
+            rel="noreferrer"
+            className="btn secondary"
+          >
+            GitHub Repository
+          </a>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
+      </header>
+
+      <section className="card">
+        <h2>Key Features</h2>
+
+        <ul>
+          <li>Financial Health Analysis</li>
+          <li>Settlement Prediction</li>
+          <li>AI Negotiation Strategy</li>
+          <li>Negotiation Letter Generation</li>
+          <li>Borrower Rights Module</li>
+          <li>Loan Management</li>
+          <li>JWT Authentication Architecture</li>
+          <li>FastAPI REST APIs</li>
+          <li>SQLite Database</li>
+          <li>Google Gemini AI Integration</li>
+        </ul>
       </section>
 
-      <div className="ticks"></div>
+      <section className="card">
+        <h2>Technology Stack</h2>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+        <div className="grid">
+          <div>React + Vite</div>
+          <div>FastAPI</div>
+          <div>Python</div>
+          <div>SQLite</div>
+          <div>Google Gemini AI</div>
+          <div>JWT Authentication</div>
+          <div>REST APIs</div>
+          <div>GitHub</div>
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <footer>
+        <p>
+          Developed as an AI-powered financial recovery platform for the
+          SkillWallet Internship Project.
+        </p>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;
