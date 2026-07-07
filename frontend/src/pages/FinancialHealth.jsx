@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../services/finreliefApi";
+import StatusMessage from "../components/common/StatusMessage";
 import {
   FaHeartbeat,
   FaMoneyBillWave,
@@ -16,19 +17,21 @@ export default function FinancialHealth() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [source, setSource] = useState("loading");
 
   useEffect(() => {
     async function loadHealth() {
+      setLoading(true);
+      setError("");
+
       try {
-        const res = await axios.post(
-          "http://127.0.0.1:8000/api/financial-analysis",
-          {
-            monthly_income: 65000,
-            monthly_expenses: 42000,
-            total_debt: 485000,
-            monthly_emi: 21000,
-          }
-        );
+        const res = await apiClient.post("/api/financial-analysis", {
+          monthly_income: 65000,
+          monthly_expenses: 42000,
+          total_debt: 485000,
+          monthly_emi: 21000,
+        });
 
         setData({
           debt_to_income_ratio: `${res.data.debt_to_income_ratio}%`,
@@ -38,16 +41,16 @@ export default function FinancialHealth() {
           )}`,
           financial_stress: res.data.financial_stress,
         });
-      } catch (err) {
-        console.log(err);
-
-        // Demo values until backend endpoint is ready
+        setSource("live");
+      } catch {
+        setError("Unable to load live financial analysis right now. Showing a safe fallback instead.");
         setData({
           debt_to_income_ratio: "38%",
           emi_to_income_ratio: "21%",
           monthly_surplus: "₹23,000",
           financial_stress: "Medium",
         });
+        setSource("fallback");
       }
 
       setLoading(false);
@@ -61,81 +64,110 @@ export default function FinancialHealth() {
       title: "Debt / Income Ratio",
       value: data.debt_to_income_ratio,
       icon: <FaChartLine size={24} />,
-      color: "bg-blue-600",
+      toneClass: "feature-tone--blue",
     },
     {
       title: "EMI / Income Ratio",
       value: data.emi_to_income_ratio,
       icon: <FaMoneyBillWave size={24} />,
-      color: "bg-green-600",
+      toneClass: "feature-tone--green",
     },
     {
       title: "Monthly Surplus",
       value: data.monthly_surplus,
       icon: <FaHeartbeat size={24} />,
-      color: "bg-purple-600",
+      toneClass: "feature-tone--violet",
     },
     {
       title: "Financial Stress",
       value: data.financial_stress,
       icon: <FaExclamationTriangle size={24} />,
-      color: "bg-red-600",
+      toneClass: "feature-tone--rose",
     },
   ];
 
   if (loading)
     return (
-      <div className="text-white text-xl">
-        Loading Financial Health...
+      <div className="feature-page">
+        <div className="feature-hero">
+          <div className="feature-kicker">Financial diagnostics</div>
+          <h1 className="feature-title">Financial Health</h1>
+          <p className="feature-description">Loading your financial analysis from FastAPI.</p>
+        </div>
+
+        <div className="feature-grid feature-grid--4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="feature-card feature-skeleton-card">
+              <div className="feature-skeleton feature-skeleton--line feature-skeleton--short" />
+              <div className="feature-skeleton feature-skeleton--line" />
+            </div>
+          ))}
+        </div>
       </div>
     );
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white">
-          Financial Health
-        </h1>
+    <div className="feature-page">
+      <header className="feature-hero feature-hero--split">
+        <div>
+          <div className="feature-kicker">Financial diagnostics</div>
+          <h1 className="feature-title">Financial Health</h1>
+          <p className="feature-description">
+            AI-generated analysis of your current financial position.
+          </p>
+        </div>
 
-        <p className="text-gray-400 mt-2">
-          AI-generated analysis of your current financial position.
-        </p>
-      </div>
+        <div className="feature-chip feature-chip--status">
+          {source === "live" ? "Live API analysis" : source === "fallback" ? "Fallback analysis" : "Preparing analysis"}
+        </div>
+      </header>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {error ? (
+        <StatusMessage
+          variant="error"
+          title="Using fallback metrics"
+          message={error}
+        />
+      ) : (
+        <StatusMessage
+          variant="success"
+          title="Live metrics loaded"
+          message="Pulled directly from the FastAPI financial analysis endpoint."
+        />
+      )}
+
+      <div className="feature-grid feature-grid--4">
         {cards.map((card) => (
-          <div
-            key={card.title}
-            className="bg-gray-900 border border-gray-800 rounded-xl p-6"
-          >
-            <div className="flex justify-between items-center">
+          <article key={card.title} className="feature-card feature-card--stat">
+            <div className="feature-card__header">
               <div>
-                <p className="text-gray-400">{card.title}</p>
-                <h2 className="text-3xl font-bold text-white mt-2">
-                  {card.value}
-                </h2>
+                <p className="feature-card__label">{card.title}</p>
+                <div className="feature-card__value">{card.value}</div>
               </div>
 
-              <div className={`${card.color} p-4 rounded-xl text-white`}>
-                {card.icon}
-              </div>
+              <div className={`feature-card__icon feature-tone ${card.toneClass}`}>{card.icon}</div>
             </div>
-          </div>
+          </article>
         ))}
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">
-          AI Recommendation
-        </h2>
+      <section className="feature-panel">
+        <div className="feature-panel__header">
+          <div className="feature-chip">
+            <FaHeartbeat />
+            AI recommendation
+          </div>
+        </div>
 
-        <ul className="space-y-3 text-gray-300">
-          <li>• Continue paying EMIs on time.</li>
-          <li>• Maintain Debt-to-Income ratio below 40%.</li>
-          <li>• Avoid taking additional unsecured loans.</li>
-          <li>• Increase emergency savings by at least 3 months of expenses.</li>
-        </ul>
-      </div>
+        <div className="feature-panel__body">
+          <ul className="feature-bullet-list">
+            <li>Continue paying EMIs on time.</li>
+            <li>Maintain Debt-to-Income ratio below 40%.</li>
+            <li>Avoid taking additional unsecured loans.</li>
+            <li>Increase emergency savings by at least 3 months of expenses.</li>
+          </ul>
+        </div>
+      </section>
     </div>
   );
 }

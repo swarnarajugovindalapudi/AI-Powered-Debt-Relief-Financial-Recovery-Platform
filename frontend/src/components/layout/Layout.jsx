@@ -4,14 +4,16 @@ import Navbar from "./Navbar";
 
 function Layout() {
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-shell">
       <Sidebar />
 
-      <div style={{ flex: 1 }}>
+      <div className="app-shell__content">
         <Navbar />
 
-        <main style={{ padding: "24px" }}>
-          <Outlet />
+        <main className="app-main">
+          <div className="app-main__inner">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

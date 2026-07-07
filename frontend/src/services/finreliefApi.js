@@ -7,6 +7,8 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
+export default apiClient;
+
 export function predictSettlement(payload) {
   return apiClient.post("/api/predict-settlement", payload);
 }

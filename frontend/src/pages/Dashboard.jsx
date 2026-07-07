@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../services/finreliefApi";
 import {
   AlertTriangle,
   Activity,
@@ -48,7 +48,7 @@ function Dashboard() {
       setError("");
 
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/dashboard");
+        const response = await apiClient.get("/api/dashboard");
 
         if (!isMounted) {
           return;
@@ -97,55 +97,69 @@ function Dashboard() {
       title: "Total Debt",
       value: currencyFormatter.format(dashboard.totalDebt),
       icon: Wallet,
-      color: "bg-red-500/15 text-red-300",
-      accent: "from-red-500/20 to-red-500/5",
+      toneClass: "feature-tone--rose",
     },
     {
       title: "Monthly Income",
       value: currencyFormatter.format(dashboard.monthlyIncome),
       icon: TrendingUp,
-      color: "bg-emerald-500/15 text-emerald-300",
-      accent: "from-emerald-500/20 to-emerald-500/5",
+      toneClass: "feature-tone--green",
     },
     {
       title: "Monthly Expenses",
       value: currencyFormatter.format(dashboard.monthlyExpenses),
       icon: PiggyBank,
-      color: "bg-sky-500/15 text-sky-300",
-      accent: "from-sky-500/20 to-sky-500/5",
+      toneClass: "feature-tone--blue",
     },
     {
       title: "Monthly Surplus",
       value: currencyFormatter.format(dashboard.monthlySurplus),
       icon: Landmark,
-      color: "bg-violet-500/15 text-violet-300",
-      accent: "from-violet-500/20 to-violet-500/5",
+      toneClass: "feature-tone--violet",
     },
     {
       title: "Financial Stress",
       value: dashboard.financialStress,
       icon: AlertTriangle,
-      color:
+      toneClass:
         dashboard.financialStress === "High"
-          ? "bg-red-500/15 text-red-300"
+          ? "feature-tone--rose"
           : dashboard.financialStress === "Moderate"
-          ? "bg-amber-500/15 text-amber-300"
-          : "bg-emerald-500/15 text-emerald-300",
-      accent:
-        dashboard.financialStress === "High"
-          ? "from-red-500/20 to-red-500/5"
-          : dashboard.financialStress === "Moderate"
-          ? "from-amber-500/20 to-amber-500/5"
-          : "from-emerald-500/20 to-emerald-500/5",
+          ? "feature-tone--amber"
+          : "feature-tone--green",
     },
     {
       title: "Debt-to-Income Ratio",
       value: `${numberFormatter.format(dashboard.debtToIncomeRatio)}%`,
       icon: ShieldCheck,
-      color: "bg-cyan-500/15 text-cyan-300",
-      accent: "from-cyan-500/20 to-cyan-500/5",
+      toneClass: "feature-tone--teal",
     },
   ];
+
+  const chartRows = [
+    {
+      label: "Monthly income",
+      value: dashboard.monthlyIncome,
+      barClass: "dashboard-chart__fill--income",
+    },
+    {
+      label: "Monthly expenses",
+      value: dashboard.monthlyExpenses,
+      barClass: "dashboard-chart__fill--expenses",
+    },
+    {
+      label: "Monthly EMI",
+      value: dashboard.monthlyEmi ?? dashboard.monthlyExpenses,
+      barClass: "dashboard-chart__fill--emi",
+    },
+    {
+      label: "Monthly surplus",
+      value: dashboard.monthlySurplus,
+      barClass: "dashboard-chart__fill--surplus",
+    },
+  ];
+
+  const chartMax = Math.max(...chartRows.map((item) => item.value), 1);
 
   const activeLoans = dashboard.activeLoans;
   const settlementProgress = dashboard.financialHealthScore
@@ -153,193 +167,223 @@ function Dashboard() {
     : 0;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="feature-page">
+      <header className="feature-hero feature-hero--split">
         <div>
-          <h1 className="text-3xl font-bold text-white">Financial Dashboard</h1>
-          <p className="mt-2 max-w-2xl text-sm text-gray-400">
+          <div className="feature-kicker">Portfolio Snapshot</div>
+          <h1 className="feature-title">Financial Dashboard</h1>
+          <p className="feature-description">
             Overview of your current debt position, stress level, and settlement readiness.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-gray-800 bg-gray-900/80 px-4 py-3 text-sm text-gray-300 shadow-lg shadow-black/20 backdrop-blur">
+        <div className="feature-chip feature-chip--status">
           {dashboard.recommendedAction ? (
             <span>
-              Recommended action: <span className="text-white">{dashboard.recommendedAction}</span>
+              Recommended action: <strong>{dashboard.recommendedAction}</strong>
             </span>
           ) : (
             <span>Refreshing dashboard metrics</span>
           )}
         </div>
-      </div>
+      </header>
 
       {loading ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="feature-grid feature-grid--3">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-32 animate-pulse rounded-2xl border border-gray-800 bg-gray-900/70"
-            />
+            <div key={index} className="feature-card feature-skeleton-card">
+              <div className="feature-skeleton feature-skeleton--line feature-skeleton--short" />
+              <div className="feature-skeleton feature-skeleton--line" />
+            </div>
           ))}
         </div>
       ) : error ? (
-        <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-6 text-red-100">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Dashboard unavailable</h2>
-              <p className="mt-1 text-sm text-red-100/80">{error}</p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="inline-flex items-center justify-center rounded-xl border border-red-300/30 bg-red-500/20 px-4 py-2 text-sm font-medium text-red-50 transition hover:bg-red-500/30"
-            >
+        <div className="status-message status-message--error">
+          <div className="status-message__content">
+            <div className="status-message__title status-message__title--error">Dashboard unavailable</div>
+            <p className="status-message__text">{error}</p>
+          </div>
+          <div className="status-message__actions">
+            <button type="button" onClick={() => window.location.reload()} className="feature-button feature-button--secondary">
               Retry
             </button>
           </div>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="feature-grid feature-grid--3">
             {stats.map((item) => {
               const Icon = item.icon;
 
               return (
-                <div
-                  key={item.title}
-                  className="group rounded-2xl border border-gray-800 bg-gray-900/90 p-6 shadow-lg shadow-black/20 transition hover:-translate-y-0.5 hover:border-gray-700"
-                >
-                  <div className="flex items-start justify-between gap-4">
+                <article key={item.title} className="feature-card feature-card--stat">
+                  <div className="feature-card__header">
                     <div>
-                      <p className="text-sm text-gray-400">{item.title}</p>
-                      <h2 className="mt-2 text-2xl font-bold text-white">
-                        {item.value}
-                      </h2>
+                      <p className="feature-card__label">{item.title}</p>
+                      <div className="feature-card__value">{item.value}</div>
                     </div>
-
-                    <div className={`rounded-2xl bg-gradient-to-br ${item.accent} p-3 ${item.color}`}>
-                      <Icon size={22} />
+                    <div className={`feature-card__icon feature-tone ${item.toneClass}`}>
+                      <Icon size={20} />
                     </div>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-2xl border border-gray-800 bg-gray-900/90 p-6 shadow-lg shadow-black/20">
-              <div className="flex items-center gap-3">
-                <Activity className="text-indigo-400" size={20} />
-                <h2 className="text-xl font-semibold text-white">Financial Overview</h2>
-              </div>
-
-              <div className="mt-6 space-y-5">
-                <div>
-                  <div className="mb-2 flex items-center justify-between text-sm text-gray-400">
-                    <span>Financial Health Score</span>
-                    <span>{settlementProgress}%</span>
-                  </div>
-                  <div className="h-3 rounded-full bg-gray-800">
-                    <div
-                      className="h-3 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
-                      style={{ width: `${settlementProgress}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="mb-2 flex items-center justify-between text-sm text-gray-400">
-                    <span>Debt-to-Income Ratio</span>
-                    <span>{numberFormatter.format(dashboard.debtToIncomeRatio)}%</span>
-                  </div>
-                  <div className="h-3 rounded-full bg-gray-800">
-                    <div
-                      className="h-3 rounded-full bg-gradient-to-r from-amber-400 to-red-400"
-                      style={{ width: `${Math.min(dashboard.debtToIncomeRatio, 100)}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-gray-800 bg-black/20 p-4 text-sm text-gray-300">
-                  <p className="text-gray-400">Monthly Surplus</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">
-                    {currencyFormatter.format(dashboard.monthlySurplus)}
-                  </p>
-                  <p className="mt-2 text-gray-400">
-                    Surplus after monthly expenses and EMI obligations.
-                  </p>
+          <div className="feature-grid feature-grid--2 dashboard-grid">
+            <section className="feature-panel">
+              <div className="feature-panel__header">
+                <div className="feature-chip">
+                  <Activity size={16} />
+                  Financial overview
                 </div>
               </div>
-            </div>
 
-            <div className="rounded-2xl border border-gray-800 bg-gray-900/90 p-6 shadow-lg shadow-black/20">
-              <h2 className="text-xl font-semibold text-white">AI Recommendations</h2>
+              <div className="feature-panel__body feature-summary">
+                <div className="feature-summary__row">
+                  <span>Financial Health Score</span>
+                  <strong>{settlementProgress}%</strong>
+                </div>
+                <div className="feature-progress">
+                  <div className="feature-progress__bar" style={{ width: `${settlementProgress}%` }} />
+                </div>
 
-              <div className="mt-5 space-y-4">
-                {dashboard.aiRecommendations.length > 0 ? (
-                  dashboard.aiRecommendations.map((recommendation) => (
-                    <div key={recommendation} className="flex gap-3 rounded-xl border border-gray-800 bg-black/20 p-4">
-                      <CheckCircle className="mt-0.5 shrink-0 text-emerald-400" size={18} />
-                      <p className="text-sm leading-6 text-gray-300">{recommendation}</p>
+                <div className="feature-summary__row">
+                  <span>Debt-to-Income Ratio</span>
+                  <strong>{numberFormatter.format(dashboard.debtToIncomeRatio)}%</strong>
+                </div>
+                <div className="feature-progress feature-progress--warm">
+                  <div className="feature-progress__bar" style={{ width: `${Math.min(dashboard.debtToIncomeRatio, 100)}%` }} />
+                </div>
+
+                <div className="feature-card feature-card--inner">
+                  <p className="feature-card__label">Monthly Surplus</p>
+                  <div className="feature-card__value">{currencyFormatter.format(dashboard.monthlySurplus)}</div>
+                  <p className="feature-help">Surplus after monthly expenses and EMI obligations.</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="feature-panel">
+              <div className="feature-panel__header">
+                <div className="feature-chip">
+                  <Activity size={16} />
+                  Cash flow chart
+                </div>
+              </div>
+
+              <div className="feature-panel__body dashboard-chart">
+                {chartRows.map((row) => {
+                  const width = Math.round((row.value / chartMax) * 100);
+
+                  return (
+                    <div className="dashboard-chart__row" key={row.label}>
+                      <div className="dashboard-chart__meta">
+                        <span className="dashboard-chart__label">{row.label}</span>
+                        <strong>{currencyFormatter.format(row.value)}</strong>
+                      </div>
+                      <div className="dashboard-chart__track">
+                        <div className={`dashboard-chart__fill ${row.barClass}`} style={{ width: `${width}%` }} />
+                      </div>
                     </div>
-                  ))
+                  );
+                })}
+
+                <div className="dashboard-summary">
+                  <div className="dashboard-summary__item">
+                    <span className="dashboard-summary__label">Financial health score</span>
+                    <span className="dashboard-summary__value">{settlementProgress}%</span>
+                  </div>
+                  <div className="dashboard-summary__item">
+                    <span className="dashboard-summary__label">Debt-to-income ratio</span>
+                    <span className="dashboard-summary__value">{numberFormatter.format(dashboard.debtToIncomeRatio)}%</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="feature-panel">
+              <div className="feature-panel__header">
+                <div className="feature-chip">
+                  <CheckCircle size={16} />
+                  AI recommendations
+                </div>
+              </div>
+
+              <div className="feature-panel__body">
+                {dashboard.aiRecommendations.length > 0 ? (
+                  <div className="feature-list">
+                    {dashboard.aiRecommendations.map((recommendation) => (
+                      <article key={recommendation} className="feature-list__item feature-list__item--compact">
+                        <div className="feature-list__icon">
+                          <CheckCircle size={18} />
+                        </div>
+                        <p className="feature-list__text">{recommendation}</p>
+                      </article>
+                    ))}
+                  </div>
                 ) : (
-                  <div className="rounded-xl border border-gray-800 bg-black/20 p-4 text-sm text-gray-400">
-                    No AI recommendations are available yet.
+                  <div className="feature-empty feature-empty--compact">
+                    <div className="feature-empty__title">No recommendations available yet</div>
+                    <p className="feature-empty__text">Connect your borrower data to surface personalized next steps here.</p>
                   </div>
                 )}
               </div>
-            </div>
+            </section>
           </div>
 
-          <div className="rounded-2xl border border-gray-800 bg-gray-900/90 shadow-lg shadow-black/20 overflow-hidden">
-            <div className="flex flex-col gap-2 border-b border-gray-800 p-6 md:flex-row md:items-center md:justify-between">
+          <section className="feature-panel">
+            <div className="feature-panel__header feature-panel__header--split">
               <div>
-                <h2 className="text-xl font-semibold text-white">Active Loans Summary</h2>
-                <p className="mt-1 text-sm text-gray-400">
+                <div className="feature-chip">
+                  <Wallet size={16} />
+                  Active loans summary
+                </div>
+                <p className="feature-description feature-description--compact">
                   {dashboard.activeLoanCount} loans tracked in the current repayment profile.
                 </p>
               </div>
 
-              <div className="rounded-xl border border-gray-800 bg-black/20 px-4 py-2 text-sm text-gray-300">
-                Total Debt: <span className="text-white">{currencyFormatter.format(dashboard.totalDebt)}</span>
+              <div className="feature-chip feature-chip--status">
+                Total Debt: <strong>{currencyFormatter.format(dashboard.totalDebt)}</strong>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-gray-950/40 text-left text-sm text-gray-400">
-                  <tr>
-                    <th className="px-6 py-4 font-medium">Lender</th>
-                    <th className="px-6 py-4 font-medium">Outstanding</th>
-                    <th className="px-6 py-4 font-medium">Monthly EMI</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                  {activeLoans.map((loan) => (
-                    <tr key={loan.lender} className="transition hover:bg-white/5">
-                      <td className="px-6 py-4 text-white">{loan.lender}</td>
-                      <td className="px-6 py-4 text-gray-300">{currencyFormatter.format(loan.amount)}</td>
-                      <td className="px-6 py-4 text-gray-300">{currencyFormatter.format(loan.emi)}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                            loan.status === "Negotiation"
-                              ? "bg-amber-500/15 text-amber-300"
-                              : "bg-emerald-500/15 text-emerald-300"
-                          }`}
-                        >
-                          {loan.status}
-                        </span>
-                      </td>
+            <div className="feature-table-wrap">
+              {activeLoans.length > 0 ? (
+                <table className="feature-table">
+                  <thead>
+                    <tr>
+                      <th>Lender</th>
+                      <th>Outstanding</th>
+                      <th>Monthly EMI</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {activeLoans.map((loan) => (
+                      <tr key={loan.lender}>
+                        <td>{loan.lender}</td>
+                        <td>{currencyFormatter.format(loan.amount)}</td>
+                        <td>{currencyFormatter.format(loan.emi)}</td>
+                        <td>
+                          <span className={`feature-pill ${loan.status === "Negotiation" ? "feature-pill--warning" : "feature-pill--success"}`}>
+                            {loan.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="dashboard-table-empty">
+                  <div className="dashboard-table-empty__title">No active loans to display</div>
+                  <p className="dashboard-table-empty__text">This section will populate once loan accounts are available in the backend payload.</p>
+                </div>
+              )}
             </div>
-          </div>
+          </section>
         </>
       )}
     </div>

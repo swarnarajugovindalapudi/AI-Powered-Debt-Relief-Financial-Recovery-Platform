@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Copy, FileText, LoaderCircle, MailWarning, Sparkles } from "lucide-react";
 import { generateNegotiationLetter } from "../services/finreliefApi";
+import StatusMessage from "../components/common/StatusMessage";
 
 const defaultForm = {
   borrower_name: "Aarav Sharma",
@@ -137,7 +138,13 @@ function NegotiationLetter() {
         </p>
       </header>
 
-      {error ? <div className="feature-error">{error}</div> : null}
+      {error ? (
+        <StatusMessage
+          variant="error"
+          title="Fallback draft in use"
+          message={error}
+        />
+      ) : null}
 
       <div className="feature-grid feature-grid--2">
         <section className="feature-panel">

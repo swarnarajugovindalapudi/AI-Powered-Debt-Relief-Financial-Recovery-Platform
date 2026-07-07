@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BadgeCheck, BookOpen, ShieldAlert, Sparkles } from "lucide-react";
 import { getBorrowerRights } from "../services/finreliefApi";
+import StatusMessage from "../components/common/StatusMessage";
 
 const fallbackRights = [
   "Right to receive fair treatment from lenders.",
@@ -59,7 +60,13 @@ function KnowYourRights() {
         </p>
       </header>
 
-      {error ? <div className="feature-error">{error}</div> : null}
+      {error ? (
+        <StatusMessage
+          variant="error"
+          title="Fallback rights list"
+          message={error}
+        />
+      ) : null}
 
       <div className="feature-grid feature-grid--2">
         <section className="feature-panel">

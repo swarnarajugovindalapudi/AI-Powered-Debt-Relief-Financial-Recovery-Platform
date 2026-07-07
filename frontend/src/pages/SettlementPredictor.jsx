@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, Calculator, BadgePercent, ShieldCheck, Sparkles } from "lucide-react";
 import { predictSettlement } from "../services/finreliefApi";
+import StatusMessage from "../components/common/StatusMessage";
 
 const defaultForm = {
   monthly_income: "65000",
@@ -134,22 +135,19 @@ function SettlementPredictor() {
           title: "Recommended Settlement",
           value: `${result.recommended_settlement_percent}%`,
           icon: BadgePercent,
-          tone: "rgba(56, 189, 248, 0.15)",
-          color: "#7dd3fc",
+          toneClass: "feature-tone--blue",
         },
         {
           title: "Estimated Amount",
           value: currencyFormatter.format(result.estimated_settlement_amount),
           icon: Calculator,
-          tone: "rgba(16, 185, 129, 0.14)",
-          color: "#6ee7b7",
+          toneClass: "feature-tone--green",
         },
         {
           title: "Confidence Score",
           value: `${result.confidence_score}%`,
           icon: ShieldCheck,
-          tone: "rgba(168, 85, 247, 0.14)",
-          color: "#c084fc",
+          toneClass: "feature-tone--violet",
         },
       ]
     : [];
@@ -165,7 +163,13 @@ function SettlementPredictor() {
         </p>
       </header>
 
-      {error ? <div className="feature-error">{error}</div> : null}
+      {error ? (
+        <StatusMessage
+          variant="error"
+          title="Fallback settlement estimate"
+          message={error}
+        />
+      ) : null}
 
       <div className="feature-grid feature-grid--2">
         <section className="feature-panel">
@@ -268,7 +272,7 @@ function SettlementPredictor() {
 
                     return (
                       <article className="feature-card" key={card.title}>
-                        <div className="feature-chip" style={{ background: card.tone, color: card.color }}>
+                        <div className={`feature-chip feature-tone ${card.toneClass}`}>
                           <Icon size={16} />
                           {card.title}
                         </div>
