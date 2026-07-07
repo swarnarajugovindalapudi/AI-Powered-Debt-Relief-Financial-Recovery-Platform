@@ -1,0 +1,9 @@
+{
+  "name": "ai-powered-debt-relief-financial-recovery-platform",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint"
+  }
+}
