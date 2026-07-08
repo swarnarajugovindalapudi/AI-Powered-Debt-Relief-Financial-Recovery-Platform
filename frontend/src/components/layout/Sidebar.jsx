@@ -1,13 +1,13 @@
 import { NavLink } from "react-router-dom";
 import {
-  FaHome,
-  FaChartLine,
-  FaBalanceScale,
-  FaRobot,
-  FaHistory,
-  FaInfoCircle,
-  FaBook,
-} from "react-icons/fa";
+  LayoutDashboard,
+  HeartPulse,
+  Scale,
+  Bot,
+  BookOpen,
+  Clock,
+  Info,
+} from "lucide-react";
 
 function Sidebar() {
   return (
@@ -22,31 +22,31 @@ function Sidebar() {
 
       <nav className="app-sidebar__nav" aria-label="Primary navigation">
         <NavLink to="/dashboard" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaHome /> Dashboard
+          <LayoutDashboard size={18} /> Dashboard
         </NavLink>
 
         <NavLink to="/financial-health" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaChartLine /> Financial Health
+          <HeartPulse size={18} /> Financial Health
         </NavLink>
 
         <NavLink to="/settlement-predictor" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaBalanceScale /> Settlement Predictor
+          <Scale size={18} /> Settlement Predictor
         </NavLink>
 
         <NavLink to="/negotiation-letter" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaRobot /> AI Negotiation
+          <Bot size={18} /> AI Negotiation
         </NavLink>
 
         <NavLink to="/know-your-rights" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaBook /> Know Your Rights
+          <BookOpen size={18} /> Know Your Rights
         </NavLink>
 
         <NavLink to="/history" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaHistory /> History
+          <Clock size={18} /> History
         </NavLink>
 
         <NavLink to="/about" className={({ isActive }) => `app-navlink ${isActive ? "app-navlink--active" : ""}`}>
-          <FaInfoCircle /> About
+          <Info size={18} /> About
         </NavLink>
       </nav>
 
