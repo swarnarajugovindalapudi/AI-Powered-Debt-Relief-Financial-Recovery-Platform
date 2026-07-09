@@ -156,7 +156,7 @@ function Login() {
                 </div>
 
                 <button
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-600 px-4 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="feature-button login-button"
                   type="submit"
                   disabled={loading}
                 >
