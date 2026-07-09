@@ -97,22 +97,24 @@ def test_borrower_rights():
 
 
 def test_auth_login_demo_user():
-    response = client.post("/api/auth/login", json={
-        "email": "demo@gmail.com",
-        "password": "demo1234",
-    })
-    assert response.status_code == 200
-    data = response.json()
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
+    with TestClient(app) as test_client:
+        response = test_client.post("/api/auth/login", json={
+            "email": "demo@gmail.com",
+            "password": "demo1234",
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert "access_token" in data
+        assert data["token_type"] == "bearer"
 
 
 def test_auth_login_invalid_password():
-    response = client.post("/api/auth/login", json={
-        "email": "demo@gmail.com",
-        "password": "wrongpassword",
-    })
-    assert response.status_code == 401
+    with TestClient(app) as test_client:
+        response = test_client.post("/api/auth/login", json={
+            "email": "demo@gmail.com",
+            "password": "wrongpassword",
+        })
+        assert response.status_code == 401
 
 
 def test_financial_analysis_validation():
