@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List
-from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, DateTime, text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 import os
@@ -103,11 +103,19 @@ def get_db():
         db.close()
 
 
-# Seed a demo user on startup (No Loans - per prompt)
+# Seed a demo user on startup (No Loans - per prompt) and run migrations
 @app.on_event("startup")
-def seed_demo_user():
+def startup_event():
     db = SessionLocal()
     try:
+        # Idempotent migration: Add full_name column if it does not exist
+        try:
+            db.execute(text("ALTER TABLE users ADD COLUMN full_name VARCHAR DEFAULT ''"))
+            db.commit()
+        except Exception:
+            db.rollback() # Column already exists, safe to ignore
+
+        # Seed demo user
         existing = db.query(UserModel).filter(UserModel.email == "demo@gmail.com").first()
         if not existing:
             demo = UserModel(

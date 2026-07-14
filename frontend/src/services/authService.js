@@ -10,20 +10,6 @@ function base64UrlEncode(value) {
     .replace(/=+$/g, "");
 }
 
-function createMockToken(email) {
-  const header = base64UrlEncode(JSON.stringify({ alg: "none", typ: "JWT" }));
-  const payload = base64UrlEncode(
-    JSON.stringify({
-      sub: email,
-      email,
-      role: "borrower",
-      source: "mock-auth",
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 2,
-    })
-  );
-
-  return `${header}.${payload}.mock-signature`;
-}
 
 function extractToken(data) {
   return data?.access_token || data?.token || data?.jwt || data?.auth_token || data?.data?.token || "";
@@ -56,11 +42,7 @@ async function tryBackendLogin(email, password) {
     throw new Error(getBackendMessage(error), { cause: error });
   }
 
-  return {
-    token: createMockToken(email),
-    source: "mock",
-    message: "Using the temporary mock sign-in flow.",
-  };
+  throw new Error("Unable to sign in. No token received.");
 }
 
 async function tryBackendRegister(email, password, fullName) {
@@ -81,11 +63,7 @@ async function tryBackendRegister(email, password, fullName) {
     throw new Error(getBackendMessage(error), { cause: error });
   }
 
-  return {
-    token: createMockToken(email),
-    source: "mock",
-    message: "Using the temporary mock sign-in flow.",
-  };
+  throw new Error("Unable to register. No token received.");
 }
 
 export async function signIn({ email, password }) {
