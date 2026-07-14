@@ -103,7 +103,7 @@ def get_db():
         db.close()
 
 
-# Seed a demo user on startup (No Loans - per prompt) and run migrations
+# Startup event to run migrations
 @app.on_event("startup")
 def startup_event():
     db = SessionLocal()
@@ -114,21 +114,6 @@ def startup_event():
             db.commit()
         except Exception:
             db.rollback() # Column already exists, safe to ignore
-
-        # Seed demo user
-        existing = db.query(UserModel).filter(UserModel.email == "demo@gmail.com").first()
-        if not existing:
-            demo = UserModel(
-                email="demo@gmail.com",
-                hashed_password=hash_password("demo1234"),
-                full_name="Demo Borrower",
-                monthly_income=65000,
-                monthly_expenses=42000,
-                total_debt=520000,
-                monthly_emi=21000,
-            )
-            db.add(demo)
-            db.commit()
     finally:
         db.close()
 
