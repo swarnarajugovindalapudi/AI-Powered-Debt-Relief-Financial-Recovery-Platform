@@ -1,20 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, LoaderCircle, Lock, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, LoaderCircle, Lock, Mail, ShieldCheck, Sparkles, User } from "lucide-react";
 import AuthField from "../components/auth/AuthField";
-import { getAuthToken, signIn } from "../services/authService";
+import { getAuthToken, signIn, signUp } from "../services/authService";
 
 function Login() {
   const navigate = useNavigate();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [touched, setTouched] = useState({ email: false, password: false });
+  const [touched, setTouched] = useState({ fullName: false, email: false, password: false });
 
   const validationErrors = useMemo(() => {
     const nextErrors = {};
     const trimmedEmail = email.trim().toLowerCase();
+
+    if (isRegistering && !fullName.trim()) {
+      nextErrors.fullName = "Full name is required.";
+    }
 
     if (!trimmedEmail) {
       nextErrors.email = "Gmail address is required.";
@@ -29,7 +35,7 @@ function Login() {
     }
 
     return nextErrors;
-  }, [email, password]);
+  }, [email, password, fullName, isRegistering]);
 
   useEffect(() => {
     if (getAuthToken()) {
@@ -46,7 +52,7 @@ function Login() {
   const handleLogin = async (event) => {
     event.preventDefault();
 
-    setTouched({ email: true, password: true });
+    setTouched({ fullName: true, email: true, password: true });
     setSubmitError("");
 
     if (Object.keys(validationErrors).length > 0) {
@@ -56,10 +62,14 @@ function Login() {
     setLoading(true);
 
     try {
-      await signIn({ email: email.trim().toLowerCase(), password });
+      if (isRegistering) {
+        await signUp({ email: email.trim().toLowerCase(), password, full_name: fullName.trim() });
+      } else {
+        await signIn({ email: email.trim().toLowerCase(), password });
+      }
       navigate("/dashboard", { replace: true });
     } catch (error) {
-      setSubmitError(error?.message || "Unable to sign in right now.");
+      setSubmitError(error?.message || `Unable to ${isRegistering ? "register" : "sign in"} right now.`);
     } finally {
       setLoading(false);
     }
@@ -113,9 +123,13 @@ function Login() {
                     <ShieldCheck size={14} />
                     FinRelief AI
                   </div>
-                  <h2 className="text-3xl font-black tracking-tight text-white">Sign in</h2>
+                  <h2 className="text-3xl font-black tracking-tight text-white">
+                    {isRegistering ? "Create an account" : "Sign in"}
+                  </h2>
                   <p className="text-sm leading-6 text-slate-400">
-                    Enter your Gmail address and password to open the protected dashboard.
+                    {isRegistering 
+                      ? "Enter your details to create a protected dashboard."
+                      : "Enter your Gmail address and password to open the protected dashboard."}
                   </p>
                 </div>
 
@@ -126,6 +140,22 @@ function Login() {
                 ) : null}
 
                 <div className="space-y-4">
+                  {isRegistering && (
+                    <AuthField
+                      label="Full Name"
+                      type="text"
+                      name="fullName"
+                      value={fullName}
+                      onChange={(event) => setFullName(event.target.value)}
+                      onBlur={() => handleBlur("fullName")}
+                      placeholder="e.g. Jane Doe"
+                      autoComplete="name"
+                      error={showFieldError("fullName") ? validationErrors.fullName : ""}
+                      helperText="Your full legal name."
+                      leftIcon={<User size={16} />}
+                    />
+                  )}
+
                   <AuthField
                     label="Gmail address"
                     type="email"
@@ -162,9 +192,24 @@ function Login() {
                   disabled={loading}
                 >
                   {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-                  {loading ? "Signing in..." : "Login"}
+                  {loading ? (isRegistering ? "Registering..." : "Signing in...") : (isRegistering ? "Register" : "Login")}
                   {!loading ? <ArrowRight size={16} /> : null}
                 </button>
+
+                <p className="text-center text-sm leading-6 text-slate-500">
+                  {isRegistering ? "Already have an account? " : "Don't have an account? "}
+                  <button 
+                    type="button" 
+                    className="text-cyan-400 hover:underline"
+                    onClick={() => {
+                      setIsRegistering(!isRegistering);
+                      setSubmitError("");
+                      setTouched({ fullName: false, email: false, password: false });
+                    }}
+                  >
+                    {isRegistering ? "Sign in" : "Create one"}
+                  </button>
+                </p>
 
                 <p className="text-center text-sm leading-6 text-slate-500">
                   Demo authentication is used automatically only when the backend login endpoint is unavailable.

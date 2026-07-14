@@ -90,8 +90,42 @@ async function tryBackendLogin(email, password) {
   };
 }
 
+async function tryBackendRegister(email, password, fullName) {
+  const endpoint = "/api/auth/register";
+
+  try {
+    const response = await apiClient.post(endpoint, { email, password, full_name: fullName });
+    const token = extractToken(response.data);
+
+    if (token) {
+      return {
+        token,
+        source: "backend",
+        message: response.data?.message || "Registered successfully.",
+      };
+    }
+  } catch (error) {
+    throw new Error(getBackendMessage(error), { cause: error });
+  }
+
+  return {
+    token: createMockToken(email),
+    source: "mock",
+    message: "Using the temporary mock sign-in flow.",
+  };
+}
+
 export async function signIn({ email, password }) {
   const result = await tryBackendLogin(email, password);
+
+  localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
+  localStorage.setItem(USER_EMAIL_KEY, email);
+
+  return result;
+}
+
+export async function signUp({ email, password, full_name }) {
+  const result = await tryBackendRegister(email, password, full_name);
 
   localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
   localStorage.setItem(USER_EMAIL_KEY, email);

@@ -170,7 +170,7 @@ class AuthLoginInput(BaseModel):
 class RegisterInput(BaseModel):
     email: str
     password: str
-    full_name: Optional[str] = ""
+    full_name: str
 
 class LoanInput(BaseModel):
     lender: str
