@@ -39,48 +39,21 @@ function getBackendMessage(error) {
 }
 
 async function tryBackendLogin(email, password) {
-  const endpoints = ["/api/auth/login", "/api/login", "/auth/login", "/token"];
+  const endpoint = "/api/auth/login";
 
-  let lastNetworkError = null;
+  try {
+    const response = await apiClient.post(endpoint, { email, password });
+    const token = extractToken(response.data);
 
-  for (const endpoint of endpoints) {
-    try {
-      const response = await apiClient.post(endpoint, { email, password });
-      const token = extractToken(response.data);
-
-      if (token) {
-        return {
-          token,
-          source: "backend",
-          message: response.data?.message || "Signed in successfully.",
-        };
-      }
-    } catch (error) {
-      const status = error?.response?.status;
-
-      if (status === 401 || status === 403 || status === 422) {
-        throw new Error(getBackendMessage(error), { cause: error });
-      }
-
-      if (status === 404 || status === 405) {
-        continue;
-      }
-
-      if (error?.code === "ERR_NETWORK" || !error?.response) {
-        lastNetworkError = error;
-        continue;
-      }
-
-      throw new Error(getBackendMessage(error), { cause: error });
+    if (token) {
+      return {
+        token,
+        source: "backend",
+        message: response.data?.message || "Signed in successfully.",
+      };
     }
-  }
-
-  if (lastNetworkError) {
-    return {
-      token: createMockToken(email),
-      source: "mock",
-      message: "Backend auth is unavailable. Using a temporary secure mock sign-in.",
-    };
+  } catch (error) {
+    throw new Error(getBackendMessage(error), { cause: error });
   }
 
   return {

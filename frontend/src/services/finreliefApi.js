@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const rawBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+if (!rawBaseUrl) {
+  throw new Error("CRITICAL: VITE_API_BASE_URL environment variable is missing. You must configure the Render backend URL in your Vercel environment settings.");
+}
+
 const apiBaseUrl = rawBaseUrl.replace(/\/+$/, "");
 
 const apiClient = axios.create({
