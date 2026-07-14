@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { Bell, LogOut, ShieldCheck } from "lucide-react";
-import { getAuthEmail, signOut } from "../../services/authService";
+import { getAuthEmail, getAuthFullName, signOut } from "../../services/authService";
 
 function Navbar() {
   const navigate = useNavigate();
   const email = getAuthEmail();
-  const profileName = email ? email.split("@")[0] : "Borrower";
+  const rawFullName = getAuthFullName();
+  const profileName = rawFullName || (email ? email.split("@")[0] : "Borrower");
+  
   const initials = profileName
-    .split(/[._-]/)
+    .split(/[._-\s]/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part.charAt(0).toUpperCase())
@@ -32,7 +34,7 @@ function Navbar() {
             {initials}
           </div>
           <div className="app-navbar__profile-text">
-            <div className="app-navbar__profile-name">{profileName}</div>
+            <div className="app-navbar__profile-name" title={profileName}>{profileName}</div>
             <div className="app-navbar__profile-role">Borrower workspace</div>
           </div>
         </div>

@@ -167,6 +167,9 @@ function Dashboard() {
     ? Math.min(Math.max(dashboard.financialHealthScore, 0), 100)
     : 0;
 
+  const healthColor = settlementProgress > 70 ? "feature-progress--healthy" : settlementProgress > 40 ? "feature-progress--warning" : "feature-progress--critical";
+  const dtiColor = dashboard.debtToIncomeRatio < 36 ? "feature-progress--healthy" : dashboard.debtToIncomeRatio <= 50 ? "feature-progress--warning" : "feature-progress--critical";
+
   return (
     <div className="feature-page">
       <header className="feature-hero feature-hero--split">
@@ -246,7 +249,7 @@ function Dashboard() {
                   <span>Financial Health Score</span>
                   <strong>{settlementProgress}%</strong>
                 </div>
-                <div className="feature-progress">
+                <div className={`feature-progress ${healthColor}`}>
                   <div className="feature-progress__bar" style={{ width: `${settlementProgress}%` }} />
                 </div>
 
@@ -254,7 +257,7 @@ function Dashboard() {
                   <span>Debt-to-Income Ratio</span>
                   <strong>{numberFormatter.format(dashboard.debtToIncomeRatio)}%</strong>
                 </div>
-                <div className="feature-progress feature-progress--warm">
+                <div className={`feature-progress ${dtiColor}`}>
                   <div className="feature-progress__bar" style={{ width: `${Math.min(dashboard.debtToIncomeRatio, 100)}%` }} />
                 </div>
 
@@ -327,7 +330,7 @@ function Dashboard() {
                 ) : (
                   <div className="feature-empty feature-empty--compact">
                     <div className="feature-empty__title">No recommendations available yet</div>
-                    <p className="feature-empty__text">Connect your borrower data to surface personalized next steps here.</p>
+                    <p className="feature-empty__text">Complete a financial health check to generate personalized AI-driven strategies.</p>
                   </div>
                 )}
               </div>
@@ -379,8 +382,8 @@ function Dashboard() {
                 </table>
               ) : (
                 <div className="dashboard-table-empty">
-                  <div className="dashboard-table-empty__title">No active loans to display</div>
-                  <p className="dashboard-table-empty__text">This section will populate once loan accounts are available in the backend payload.</p>
+                  <div className="dashboard-table-empty__title">Your portfolio is currently empty</div>
+                  <p className="dashboard-table-empty__text">Add your first loan to begin tracking balances and optimizing repayment strategies.</p>
                 </div>
               )}
             </div>

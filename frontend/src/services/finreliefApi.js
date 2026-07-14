@@ -34,3 +34,7 @@ export function generateNegotiationLetter(payload) {
 export function getBorrowerRights() {
   return apiClient.get("/api/borrower-rights");
 }
+
+export function getUserHistory() {
+  return apiClient.get("/api/history");
+}

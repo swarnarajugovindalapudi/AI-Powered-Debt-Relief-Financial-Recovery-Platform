@@ -2,6 +2,7 @@ import apiClient from "./finreliefApi";
 
 const ACCESS_TOKEN_KEY = "access_token";
 const USER_EMAIL_KEY = "finrelief_user_email";
+const USER_FULLNAME_KEY = "finrelief_user_fullname";
 
 function base64UrlEncode(value) {
   return btoa(unescape(encodeURIComponent(value)))
@@ -36,6 +37,7 @@ async function tryBackendLogin(email, password) {
         token,
         source: "backend",
         message: response.data?.message || "Signed in successfully.",
+        fullName: response.data?.full_name || email.split("@")[0],
       };
     }
   } catch (error) {
@@ -57,6 +59,7 @@ async function tryBackendRegister(email, password, fullName) {
         token,
         source: "backend",
         message: response.data?.message || "Registered successfully.",
+        fullName: response.data?.full_name || fullName,
       };
     }
   } catch (error) {
@@ -71,6 +74,7 @@ export async function signIn({ email, password }) {
 
   localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
   localStorage.setItem(USER_EMAIL_KEY, email);
+  localStorage.setItem(USER_FULLNAME_KEY, result.fullName);
 
   return result;
 }
@@ -80,6 +84,7 @@ export async function signUp({ email, password, full_name }) {
 
   localStorage.setItem(ACCESS_TOKEN_KEY, result.token);
   localStorage.setItem(USER_EMAIL_KEY, email);
+  localStorage.setItem(USER_FULLNAME_KEY, result.fullName);
 
   return result;
 }
@@ -87,6 +92,7 @@ export async function signUp({ email, password, full_name }) {
 export function signOut() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(USER_EMAIL_KEY);
+  localStorage.removeItem(USER_FULLNAME_KEY);
 }
 
 export function getAuthToken() {
@@ -95,4 +101,8 @@ export function getAuthToken() {
 
 export function getAuthEmail() {
   return localStorage.getItem(USER_EMAIL_KEY) || "";
+}
+
+export function getAuthFullName() {
+  return localStorage.getItem(USER_FULLNAME_KEY) || "";
 }

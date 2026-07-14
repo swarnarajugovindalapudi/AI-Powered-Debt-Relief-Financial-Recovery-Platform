@@ -307,7 +307,8 @@ def auth_login(data: AuthLoginInput, db: Session = Depends(get_db)):
     return {
         "access_token": token,
         "token_type": "bearer",
-        "message": "Login successful."
+        "message": "Signed in successfully.",
+        "full_name": user.full_name
     }
 
 
@@ -336,7 +337,8 @@ def auth_register(data: RegisterInput, db: Session = Depends(get_db)):
     return {
         "access_token": token,
         "token_type": "bearer",
-        "message": "Registration successful."
+        "message": "Account created successfully.",
+        "full_name": user.full_name
     }
 
 
@@ -383,15 +385,48 @@ def delete_loan(loan_id: int, current_user: UserModel = Depends(get_current_user
         raise HTTPException(status_code=404, detail="Loan not found")
     db.delete(loan)
     db.commit()
-    return {"message": "Loan deleted"}
-
-# ------------------------
-# Core Routes
-# ------------------------
+    return {"message": "Loan deleted successfully"}
 
 @app.get("/api/history")
 def get_history(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
-    return db.query(HistoryModel).filter(HistoryModel.user_id == current_user.id).order_by(HistoryModel.created_at.desc()).all()
+    # Fetch from all three models
+    history = db.query(HistoryModel).filter(HistoryModel.user_id == current_user.id).all()
+    settlements = db.query(SettlementModel).filter(SettlementModel.user_id == current_user.id).all()
+    analyses = db.query(FinancialAnalysisModel).filter(FinancialAnalysisModel.user_id == current_user.id).all()
+
+    events = []
+    
+    for h in history:
+        events.append({
+            "id": f"hist_{h.id}",
+            "type": "negotiation",
+            "title": "Negotiation Letter Generated",
+            "description": h.details,
+            "created_at": h.created_at.isoformat() if h.created_at else None
+        })
+        
+    for s in settlements:
+        events.append({
+            "id": f"sett_{s.id}",
+            "type": "settlement",
+            "title": "Settlement Predicted",
+            "description": f"Predicted settlement of {s.estimated_amount:,.0f} ({s.recommended_percent:.0f}%)",
+            "created_at": s.created_at.isoformat() if s.created_at else None
+        })
+        
+    for a in analyses:
+        events.append({
+            "id": f"analysis_{a.id}",
+            "type": "analysis",
+            "title": "Financial Health Analyzed",
+            "description": f"Score: {a.score:,.0f}, Stress: {a.stress}",
+            "created_at": a.created_at.isoformat() if a.created_at else None
+        })
+        
+    # Sort events descending by created_at (handling Nones)
+    events.sort(key=lambda x: x["created_at"] or "", reverse=True)
+    
+    return events
 
 @app.get("/api/settlements")
 def get_settlements(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
