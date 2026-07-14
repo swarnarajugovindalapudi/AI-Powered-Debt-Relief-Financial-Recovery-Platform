@@ -389,43 +389,28 @@ def delete_loan(loan_id: int, current_user: UserModel = Depends(get_current_user
 
 @app.get("/api/history")
 def get_history(current_user: UserModel = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Fetch from all three models
-    history = db.query(HistoryModel).filter(HistoryModel.user_id == current_user.id).all()
-    settlements = db.query(SettlementModel).filter(SettlementModel.user_id == current_user.id).all()
-    analyses = db.query(FinancialAnalysisModel).filter(FinancialAnalysisModel.user_id == current_user.id).all()
+    history = db.query(HistoryModel).filter(HistoryModel.user_id == current_user.id).order_by(HistoryModel.created_at.desc()).all()
 
     events = []
-    
     for h in history:
+        if h.action_type == "Financial Analysis":
+            evt_type = "analysis"
+            title = "Financial Health Analyzed"
+        elif h.action_type == "Settlement Prediction":
+            evt_type = "settlement"
+            title = "Settlement Predicted"
+        else:
+            evt_type = "negotiation"
+            title = "Negotiation Letter Generated"
+            
         events.append({
             "id": f"hist_{h.id}",
-            "type": "negotiation",
-            "title": "Negotiation Letter Generated",
+            "type": evt_type,
+            "title": title,
             "description": h.details,
             "created_at": h.created_at.isoformat() if h.created_at else None
         })
         
-    for s in settlements:
-        events.append({
-            "id": f"sett_{s.id}",
-            "type": "settlement",
-            "title": "Settlement Predicted",
-            "description": f"Predicted settlement of {s.estimated_amount:,.0f} ({s.recommended_percent:.0f}%)",
-            "created_at": s.created_at.isoformat() if s.created_at else None
-        })
-        
-    for a in analyses:
-        events.append({
-            "id": f"analysis_{a.id}",
-            "type": "analysis",
-            "title": "Financial Health Analyzed",
-            "description": f"Score: {a.score:,.0f}, Stress: {a.stress}",
-            "created_at": a.created_at.isoformat() if a.created_at else None
-        })
-        
-    # Sort events descending by created_at (handling Nones)
-    events.sort(key=lambda x: x["created_at"] or "", reverse=True)
-    
     return events
 
 @app.get("/api/settlements")
