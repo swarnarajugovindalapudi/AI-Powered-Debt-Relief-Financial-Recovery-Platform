@@ -533,15 +533,11 @@ def dashboard(current_user: UserModel = Depends(get_current_user), db: Session =
     total_emi = sum(l.emi for l in loans) if loans else current_user.monthly_emi
 
     profile = FinancialInput(
-        monthly_income=current_user.monthly_income,
+        monthly_income=max(1.0, current_user.monthly_income),
         monthly_expenses=current_user.monthly_expenses,
         total_debt=total_debt,
         monthly_emi=total_emi,
     )
-
-    if profile.monthly_income == 0:
-        # Avoid zero division
-        profile.monthly_income = 1
 
     analysis = calculate_financial_health(profile)
     
