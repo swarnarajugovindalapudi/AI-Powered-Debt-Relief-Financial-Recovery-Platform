@@ -22,6 +22,7 @@ const numberFormatter = new Intl.NumberFormat("en-IN", {
 });
 
 const initialDashboard = {
+  fullName: "",
   totalDebt: 0,
   monthlyIncome: 0,
   monthlyExpenses: 0,
@@ -33,6 +34,8 @@ const initialDashboard = {
   aiRecommendations: [],
   activeLoans: [],
   activeLoanCount: 0,
+  settlementPredictionsCount: 0,
+  negotiationHistoryCount: 0,
 };
 
 function Dashboard() {
@@ -57,6 +60,7 @@ function Dashboard() {
         const payload = response.data;
 
         setDashboard({
+          fullName: payload.full_name ?? "",
           totalDebt: payload.total_debt ?? 0,
           monthlyIncome: payload.monthly_income ?? 0,
           monthlyExpenses: payload.monthly_expenses ?? 0,
@@ -69,6 +73,8 @@ function Dashboard() {
           activeLoans: payload.active_loans ?? [],
           activeLoanCount:
             payload.active_loan_count ?? (payload.active_loans?.length ?? 0),
+          settlementPredictionsCount: payload.settlement_predictions_count ?? 0,
+          negotiationHistoryCount: payload.negotiation_history_count ?? 0,
         });
       } catch {
         if (!isMounted) {
@@ -112,25 +118,20 @@ function Dashboard() {
       toneClass: "feature-tone--blue",
     },
     {
-      title: "Monthly Surplus",
-      value: currencyFormatter.format(dashboard.monthlySurplus),
+      title: "Active Loans",
+      value: dashboard.activeLoanCount.toString(),
       icon: Landmark,
       toneClass: "feature-tone--violet",
     },
     {
-      title: "Financial Stress",
-      value: dashboard.financialStress,
-      icon: AlertTriangle,
-      toneClass:
-        dashboard.financialStress === "High"
-          ? "feature-tone--rose"
-          : dashboard.financialStress === "Moderate"
-          ? "feature-tone--amber"
-          : "feature-tone--green",
+      title: "Settlement Predictions",
+      value: dashboard.settlementPredictionsCount.toString(),
+      icon: Activity,
+      toneClass: "feature-tone--amber",
     },
     {
-      title: "Debt-to-Income Ratio",
-      value: `${numberFormatter.format(dashboard.debtToIncomeRatio)}%`,
+      title: "Negotiation History",
+      value: dashboard.negotiationHistoryCount.toString(),
       icon: ShieldCheck,
       toneClass: "feature-tone--teal",
     },
@@ -171,7 +172,7 @@ function Dashboard() {
       <header className="feature-hero feature-hero--split">
         <div>
           <div className="feature-kicker">Portfolio Snapshot</div>
-          <h1 className="feature-title">Financial Dashboard</h1>
+          <h1 className="feature-title">Hello, {dashboard.fullName || "Borrower"}</h1>
           <p className="feature-description">
             Overview of your current debt position, stress level, and settlement readiness.
           </p>

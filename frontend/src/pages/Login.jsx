@@ -14,7 +14,7 @@ function Login() {
 
   const validationErrors = useMemo(() => {
     const nextErrors = {};
-    const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim().toLowerCase();
 
     if (!trimmedEmail) {
       nextErrors.email = "Gmail address is required.";
@@ -56,7 +56,7 @@ function Login() {
     setLoading(true);
 
     try {
-      await signIn({ email: email.trim(), password });
+      await signIn({ email: email.trim().toLowerCase(), password });
       navigate("/dashboard", { replace: true });
     } catch (error) {
       setSubmitError(error?.message || "Unable to sign in right now.");
@@ -131,10 +131,11 @@ function Login() {
                     type="email"
                     name="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => setEmail(event.target.value.toLowerCase())}
                     onBlur={() => handleBlur("email")}
                     placeholder="name@gmail.com"
                     autoComplete="email"
+                    autoCapitalize="none"
                     error={showFieldError("email") ? validationErrors.email : ""}
                     helperText="Only Gmail addresses are accepted."
                     leftIcon={<Mail size={16} />}

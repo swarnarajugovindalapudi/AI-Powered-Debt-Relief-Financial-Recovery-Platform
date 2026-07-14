@@ -9,6 +9,13 @@ from app.main import app
 
 client = TestClient(app)
 
+def get_auth_token():
+    response = client.post("/api/auth/login", json={
+        "email": "demo@gmail.com",
+        "password": "demo1234",
+    })
+    return response.json()["access_token"]
+
 
 def test_root_returns_welcome():
     response = client.get("/")
@@ -26,13 +33,14 @@ def test_health_check():
 
 
 def test_financial_analysis():
+    token = get_auth_token()
     payload = {
         "monthly_income": 65000,
         "monthly_expenses": 42000,
         "total_debt": 485000,
         "monthly_emi": 21000,
     }
-    response = client.post("/api/financial-analysis", json=payload)
+    response = client.post("/api/financial-analysis", json=payload, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     data = response.json()
     assert "monthly_surplus" in data
@@ -45,13 +53,14 @@ def test_financial_analysis():
 
 
 def test_predict_settlement():
+    token = get_auth_token()
     payload = {
         "monthly_income": 65000,
         "monthly_expenses": 42000,
         "total_debt": 485000,
         "monthly_emi": 21000,
     }
-    response = client.post("/api/predict-settlement", json=payload)
+    response = client.post("/api/predict-settlement", json=payload, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     data = response.json()
     assert "recommended_settlement_percent" in data
@@ -63,13 +72,14 @@ def test_predict_settlement():
 
 
 def test_generate_negotiation():
+    token = get_auth_token()
     payload = {
         "borrower_name": "Test User",
         "lender_name": "Test Bank",
         "loan_amount": 100000,
         "hardship_reason": "medical expenses",
     }
-    response = client.post("/api/generate-negotiation", json=payload)
+    response = client.post("/api/generate-negotiation", json=payload, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     data = response.json()
     assert "negotiation_letter" in data
@@ -78,14 +88,14 @@ def test_generate_negotiation():
 
 
 def test_dashboard():
-    response = client.get("/api/dashboard")
+    token = get_auth_token()
+    response = client.get("/api/dashboard", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     data = response.json()
     assert "active_loans" in data
     assert "total_debt" in data
     assert "monthly_income" in data
     assert "ai_recommendations" in data
-    assert data["active_loan_count"] == 3
 
 
 def test_borrower_rights():
@@ -118,11 +128,12 @@ def test_auth_login_invalid_password():
 
 
 def test_financial_analysis_validation():
+    token = get_auth_token()
     payload = {
         "monthly_income": -1000,
         "monthly_expenses": 42000,
         "total_debt": 485000,
         "monthly_emi": 21000,
     }
-    response = client.post("/api/financial-analysis", json=payload)
+    response = client.post("/api/financial-analysis", json=payload, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 422

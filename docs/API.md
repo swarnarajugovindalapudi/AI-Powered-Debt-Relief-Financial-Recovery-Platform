@@ -46,7 +46,7 @@ Register a new user account.
 ```json
 {
   "email": "user@gmail.com",
-  "password": "password123",
+  "password": "demo1234",
   "full_name": "Aarav Sharma"
 }
 ```
