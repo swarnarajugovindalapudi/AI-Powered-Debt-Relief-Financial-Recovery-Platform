@@ -1,3 +1,0 @@
-# Proposed Solution
-
-> Placeholder
