@@ -1,3 +1,0 @@
-# Scalability & Future Plan
-
-> Placeholder
