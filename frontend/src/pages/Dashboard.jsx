@@ -56,27 +56,43 @@ function Dashboard() {
         let healthOk = false;
         let pollCount = 0;
         
+        console.log(`[DEBUG-FRONTEND] Starting polling loop. pollCount: ${pollCount}, healthOk: ${healthOk}`);
         while (!healthOk && pollCount < 15) {
           try {
-            const healthRes = await apiClient.get("/health", { timeout: 5000, _isRetry: false });
+            console.log(`[DEBUG-FRONTEND] Requesting /health (Attempt ${pollCount + 1})...`);
+            const healthRes = await apiClient.get(`/health?t=${Date.now()}`, { timeout: 5000, _disableRetries: true });
+            console.log(`[DEBUG-FRONTEND] /health response received. Status: ${healthRes.status}`, healthRes.data);
             if (healthRes.status === 200) {
+              console.log("[DEBUG-FRONTEND] Health check successful. Breaking loop.");
               healthOk = true;
               setWakingBackend(false);
+            } else {
+              console.log(`[DEBUG-FRONTEND] Health check status is not 200 (it is ${healthRes.status}). healthOk remains false.`);
             }
           } catch (err) {
             pollCount++;
+            console.error(`[DEBUG-FRONTEND] /health request failed. Error:`, err.message || err);
+            console.log(`[DEBUG-FRONTEND] Polling continues because healthOk is false. pollCount is now: ${pollCount}`);
             setWakingBackend(true);
             await new Promise(res => setTimeout(res, 3000));
           }
         }
+        
+        console.log(`[DEBUG-FRONTEND] Polling stopped. healthOk: ${healthOk}, pollCount: ${pollCount}`);
 
         if (!healthOk) {
+          console.error("[DEBUG-FRONTEND] Polling exhausted 15 attempts. Throwing error.");
           throw new Error("Backend took too long to wake up.");
         }
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          console.log("[DEBUG-FRONTEND] Component unmounted before /api/dashboard request. Aborting.");
+          return;
+        }
 
+        console.log("[DEBUG-FRONTEND] Executing /api/dashboard request...");
         const response = await apiClient.get("/api/dashboard");
+        console.log("[DEBUG-FRONTEND] /api/dashboard response received:", response.status);
 
         if (!isMounted) return;
 

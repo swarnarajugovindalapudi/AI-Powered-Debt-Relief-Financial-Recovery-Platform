@@ -22,7 +22,7 @@ apiClient.interceptors.response.use(
     const config = error.config;
     
     // Prevent retries on requests that shouldn't be retried
-    if (!config || config._isRetry) {
+    if (!config || config._disableRetries) {
       return Promise.reject(error);
     }
     

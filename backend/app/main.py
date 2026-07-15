@@ -41,7 +41,10 @@ if DATABASE_URL.startswith("sqlite:///"):
         db_dir = os.path.dirname(os.path.abspath(db_path))
     
     if db_dir and not os.path.exists(db_dir):
+        print(f"[DEBUG-BACKEND] Creating database directory: {db_dir}")
         os.makedirs(db_dir, exist_ok=True)
+
+print(f"[DEBUG-BACKEND] Database URL: {DATABASE_URL}")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -104,7 +107,7 @@ class FinancialAnalysisModel(Base):
 
 
 Base.metadata.create_all(bind=engine)
-
+print("[DEBUG-BACKEND] Database tables created/verified.")
 
 def get_db():
     db = SessionLocal()
@@ -117,16 +120,22 @@ def get_db():
 # Startup event to run migrations
 @app.on_event("startup")
 def startup_event():
+    print("[DEBUG-BACKEND] Startup event triggered. Running migrations...")
     db = SessionLocal()
     try:
         # Idempotent migration: Add full_name column if it does not exist
         try:
             db.execute(text("ALTER TABLE users ADD COLUMN full_name VARCHAR DEFAULT ''"))
             db.commit()
-        except Exception:
+            print("[DEBUG-BACKEND] Migration success: Added full_name column.")
+        except Exception as e:
             db.rollback() # Column already exists, safe to ignore
+            print(f"[DEBUG-BACKEND] Migration note: full_name column check (likely exists). Details: {str(e)}")
+    except Exception as e:
+        print(f"[DEBUG-BACKEND] Critical Exception during startup: {str(e)}")
     finally:
         db.close()
+        print("[DEBUG-BACKEND] Startup migrations complete.")
 
 
 # ------------------------
@@ -439,17 +448,22 @@ def root():
 
 @app.get("/health")
 def health(db: Session = Depends(get_db)):
+    print("[DEBUG-BACKEND] /health endpoint called.")
     try:
         # Simple query to check if DB is alive
         db.execute(text("SELECT 1"))
         db_status = "healthy"
+        print("[DEBUG-BACKEND] /health: DB query successful.")
     except Exception as e:
         db_status = "unhealthy"
+        print(f"[DEBUG-BACKEND] /health: DB query failed. Error: {str(e)}")
         
-    return {
+    response_data = {
         "status": "healthy" if db_status == "healthy" else "degraded",
         "database": db_status
     }
+    print(f"[DEBUG-BACKEND] /health returning: {response_data}")
+    return response_data
 
 
 @app.post("/api/financial-analysis")
