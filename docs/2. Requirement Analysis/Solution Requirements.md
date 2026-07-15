@@ -1,3 +1,0 @@
-# Solution Requirements
-
-> Placeholder
