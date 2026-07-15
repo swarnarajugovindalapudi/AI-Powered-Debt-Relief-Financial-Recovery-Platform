@@ -59,9 +59,11 @@ function Dashboard() {
         console.log(`[DEBUG-FRONTEND] Starting polling loop. pollCount: ${pollCount}, healthOk: ${healthOk}`);
         while (!healthOk && pollCount < 15) {
           try {
-            console.log(`[DEBUG-FRONTEND] Requesting /health (Attempt ${pollCount + 1})...`);
-            const healthRes = await apiClient.get(`/health?t=${Date.now()}`, { timeout: 5000, _disableRetries: true });
-            console.log(`[DEBUG-FRONTEND] /health response received. Status: ${healthRes.status}`, healthRes.data);
+            console.log(`[DEBUG-FRONTEND] Requesting / (Attempt ${pollCount + 1})...`);
+            // Poll the root endpoint '/' instead of '/health' to bypass aggressive 
+            // ad blockers (like Brave Shields/uBlock) that block '/health' telemetry.
+            const healthRes = await apiClient.get(`/?t=${Date.now()}`, { timeout: 5000, _disableRetries: true });
+            console.log(`[DEBUG-FRONTEND] / response received. Status: ${healthRes.status}`, healthRes.data);
             if (healthRes.status === 200) {
               console.log("[DEBUG-FRONTEND] Health check successful. Breaking loop.");
               healthOk = true;
