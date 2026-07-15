@@ -1,5 +1,7 @@
 # FinRelief AI – AI-Powered Debt Relief & Financial Recovery Platform
 
+live demo : FinRelief AI – Debt Relief Platform https://share.google/D8jvqskkJqUxiEDyY
+
 ## Conclusion
 
 FinRelief AI is an AI-powered web application developed to simplify debt management and financial recovery through intelligent financial analysis and automated negotiation support. The platform combines modern full-stack technologies with AI-assisted decision making to help borrowers better understand their financial position and negotiate loan settlements more effectively.
