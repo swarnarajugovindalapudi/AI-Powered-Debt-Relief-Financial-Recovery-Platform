@@ -1,3 +1,0 @@
-# Empathy Map
-
-> Placeholder

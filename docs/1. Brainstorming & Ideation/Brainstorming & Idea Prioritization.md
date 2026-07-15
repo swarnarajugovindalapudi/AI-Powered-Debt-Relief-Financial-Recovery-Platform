@@ -1,3 +1,0 @@
-# Brainstorming & Idea Prioritization
-
-> Placeholder
