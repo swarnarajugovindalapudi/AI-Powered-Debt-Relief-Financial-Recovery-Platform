@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Clock3, FileText, Landmark, Sparkles } from "lucide-react";
-import { getUserHistory } from "../../services/finreliefApi";
+import { getUserHistory } from "../services/finreliefApi";
 
 function History() {
   const [history, setHistory] = useState([]);

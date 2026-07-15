@@ -34,3 +34,15 @@ Future enhancements may include:
 - Analytics dashboard for financial institutions
 
 Overall, FinRelief AI provides a scalable foundation for AI-driven financial recovery systems and demonstrates the practical application of full-stack development, REST APIs, database management, authentication, and Generative AI technologies within the financial domain.
+
+## Environment Variables
+
+To run the project or deploy to production, ensure the following environment variables are set:
+
+### Frontend (.env or Vercel Environment Variables)
+- `VITE_API_BASE_URL`: The URL of your deployed backend (e.g. `https://finrelief-backend.onrender.com`). If not set, it will fallback to `http://localhost:8000` for local development.
+
+### Backend (.env or Render Environment Variables)
+- `DATABASE_URL`: The connection string for the database. By default, it is `sqlite:///./finrelief.db`. On Render, this is mapped to `sqlite:////data/finrelief.db` for persistence.
+- `SECRET_KEY`: A secure string used for signing JWT authentication tokens.
+- `GEMINI_API_KEY`: Your Google Gemini API Key used for AI-driven negotiation strategies.

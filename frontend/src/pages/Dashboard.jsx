@@ -41,6 +41,7 @@ const initialDashboard = {
 function Dashboard() {
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [loading, setLoading] = useState(true);
+  const [wakingBackend, setWakingBackend] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -51,11 +52,33 @@ function Dashboard() {
       setError("");
 
       try {
+        // Poll Health Endpoint for Cold Starts
+        let healthOk = false;
+        let pollCount = 0;
+        
+        while (!healthOk && pollCount < 15) {
+          try {
+            const healthRes = await apiClient.get("/health", { timeout: 5000, _isRetry: false });
+            if (healthRes.status === 200) {
+              healthOk = true;
+              setWakingBackend(false);
+            }
+          } catch (err) {
+            pollCount++;
+            setWakingBackend(true);
+            await new Promise(res => setTimeout(res, 3000));
+          }
+        }
+
+        if (!healthOk) {
+          throw new Error("Backend took too long to wake up.");
+        }
+
+        if (!isMounted) return;
+
         const response = await apiClient.get("/api/dashboard");
 
-        if (!isMounted) {
-          return;
-        }
+        if (!isMounted) return;
 
         const payload = response.data;
 
@@ -76,17 +99,15 @@ function Dashboard() {
           settlementPredictionsCount: payload.settlement_predictions_count ?? 0,
           negotiationHistoryCount: payload.negotiation_history_count ?? 0,
         });
-      } catch {
-        if (!isMounted) {
-          return;
-        }
-
+      } catch (err) {
+        if (!isMounted) return;
         setError(
-          "Unable to load dashboard data right now. Please verify that the backend is running."
+          err.message || "Unable to load dashboard data right now. Please verify that the backend is running."
         );
       } finally {
         if (isMounted) {
           setLoading(false);
+          setWakingBackend(false);
         }
       }
     }
@@ -192,7 +213,14 @@ function Dashboard() {
         </div>
       </header>
 
-      {loading ? (
+      {wakingBackend ? (
+        <div className="status-message">
+          <div className="status-message__content">
+            <div className="status-message__title">Waking backend...</div>
+            <p className="status-message__text">The server is spinning up. This usually takes about 30-50 seconds on the free tier. Please wait.</p>
+          </div>
+        </div>
+      ) : loading ? (
         <div className="feature-grid feature-grid--3">
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="feature-card feature-skeleton-card">

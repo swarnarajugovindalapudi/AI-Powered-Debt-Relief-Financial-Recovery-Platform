@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:8000
+Base URL: `<VITE_API_BASE_URL>` (e.g. `https://your-render-app.onrender.com`)
 ```
 
 ---

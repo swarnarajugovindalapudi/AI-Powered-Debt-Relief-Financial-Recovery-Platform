@@ -32,6 +32,17 @@ app.add_middleware(
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./finrelief.db")
 
+# Automatically create the directory for the SQLite database if it doesn't exist
+if DATABASE_URL.startswith("sqlite:///"):
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    if db_path.startswith("/"): # Absolute path like sqlite:////data/...
+        db_dir = os.path.dirname(db_path)
+    else:
+        db_dir = os.path.dirname(os.path.abspath(db_path))
+    
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -427,9 +438,17 @@ def root():
 
 
 @app.get("/health")
-def health():
+def health(db: Session = Depends(get_db)):
+    try:
+        # Simple query to check if DB is alive
+        db.execute(text("SELECT 1"))
+        db_status = "healthy"
+    except Exception as e:
+        db_status = "unhealthy"
+        
     return {
-        "status": "healthy"
+        "status": "healthy" if db_status == "healthy" else "degraded",
+        "database": db_status
     }
 
 
